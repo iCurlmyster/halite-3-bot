@@ -5,6 +5,7 @@ import (
 	"hlt"
 	"hlt/gameconfig"
 	"hlt/log"
+	"logic"
 	"math/rand"
 	"os"
 	"os/signal"
@@ -52,16 +53,12 @@ func main() {
 		var gameMap = game.Map
 		var ships = me.Ships
 		var commands = []hlt.Command{}
+		var gameAI = logic.NewGameAI()
 		for i := range ships {
 			var ship = ships[i]
 			var maxHalite, _ = config.GetInt(gameconfig.MaxHalite)
-			var currentCell = gameMap.AtEntity(ship.E)
 
-			if currentCell.Halite < (maxHalite/10) || ship.IsFull() {
-				commands = append(commands, ship.Move(hlt.AllDirections[rand.Intn(4)]))
-			} else {
-				commands = append(commands, ship.Move(hlt.Still()))
-			}
+			commands = append(commands, gameAI.Move(gameMap, ship, maxHalite))
 
 		}
 		var shipCost, _ = config.GetInt(gameconfig.ShipCost)
