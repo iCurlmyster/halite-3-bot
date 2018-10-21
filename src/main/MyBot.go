@@ -53,12 +53,12 @@ func main() {
 		var gameMap = game.Map
 		var ships = me.Ships
 		var commands = []hlt.Command{}
-		var gameAI = logic.NewGameAI()
+		var gameAI = logic.NewGameAI(gameMap, me)
 		for i := range ships {
 			var ship = ships[i]
 			var maxHalite, _ = config.GetInt(gameconfig.MaxHalite)
 
-			commands = append(commands, gameAI.Move(gameMap, ship, maxHalite))
+			commands = append(commands, gameAI.Move(ship, maxHalite))
 
 		}
 		var shipCost, _ = config.GetInt(gameconfig.ShipCost)
