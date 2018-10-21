@@ -40,8 +40,10 @@ func main() {
 	// At this point "game" variable is populated with initial map data.
 	// This is a good place to do computationally expensive start-up pre-processing.
 	// As soon as you call "ready" function below, the 2 second per turn timer will start.
-
 	var config = gameconfig.GetInstance()
+	// Setup GameAI to persist data between frames
+	gameAI := logic.NewGameAI(game, config)
+
 	fileLogger := log.NewFileLogger(game.Me.ID)
 	var logger = fileLogger.Logger
 	logger.Printf("Successfully created bot! My Player ID is %d. Bot rng seed is %d.", game.Me.ID, seed)
@@ -53,13 +55,10 @@ func main() {
 		var gameMap = game.Map
 		var ships = me.Ships
 		var commands = []hlt.Command{}
-		var gameAI = logic.NewGameAI(gameMap, me)
+		var moveAI = logic.NewMoveAI(gameAI, gameMap, me)
 		for i := range ships {
 			var ship = ships[i]
-			var maxHalite, _ = config.GetInt(gameconfig.MaxHalite)
-
-			commands = append(commands, gameAI.Move(ship, maxHalite))
-
+			commands = append(commands, moveAI.Move(ship))
 		}
 		var shipCost, _ = config.GetInt(gameconfig.ShipCost)
 		if game.TurnNumber <= 200 && me.Halite >= shipCost && !gameMap.AtEntity(me.Shipyard.E).IsOccupied() {

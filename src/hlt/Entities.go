@@ -13,6 +13,11 @@ type Entity struct {
 	Pos      *Position
 }
 
+// ID - Returns the Entity's ID
+func (e *Entity) ID() int {
+	return e.id
+}
+
 /*********************************************************************************/
 
 // Dropoff - Dropoff structure

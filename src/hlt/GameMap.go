@@ -19,7 +19,7 @@ func (gm *GameMap) String() string {
 // NewGameMap - Creates an empty map
 func NewGameMap(width int, height int) *GameMap {
 	cells := make([][]*MapCell, height)
-	for i := range cells {
+	for i := 0; i < len(cells); i++ {
 		cells[i] = make([]*MapCell, width)
 	}
 	return &GameMap{width, height, cells}
@@ -91,7 +91,9 @@ func (gm *GameMap) at(position *Position) *MapCell {
 // NaiveNavigate -
 func (gm *GameMap) NaiveNavigate(ship *Ship, destination *Position) *Direction {
 	var unsafeMoves = gm.GetUnsafeMoves(ship.E.Pos, destination)
-	for _, direction := range unsafeMoves {
+	var direction *Direction
+	for i := 0; i < len(unsafeMoves); i++ {
+		direction = unsafeMoves[i]
 		var targetPos, _ = ship.E.Pos.DirectionalOffset(direction)
 		if !gm.at(targetPos).IsOccupied() {
 			gm.at(targetPos).MarkUnsafe(ship)

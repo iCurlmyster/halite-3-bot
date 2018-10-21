@@ -11,9 +11,9 @@ import (
 
 // Game setting keys
 const (
-	ShipCost                 string = "NEW_ENTITY_ENERGY_COST"    /** The maximum amount of halite a ship can carry. */
-	DropoffCost              string = "DROPOFF_COST"              /** The cost to build a single ship. */
-	MaxHalite                string = "MAX_ENERGY"                /** The cost to build a dropoff. */
+	ShipCost                 string = "NEW_ENTITY_ENERGY_COST"    /** The cost to build a single ship. */
+	DropoffCost              string = "DROPOFF_COST"              /** The cost to build a dropoff. */
+	MaxHalite                string = "MAX_ENERGY"                /** The maximum amount of halite a ship can carry. */
 	MaxTurns                 string = "MAX_TURNS"                 /** The maximum number of turns a game can last. */
 	ExtractRatio             string = "EXTRACT_RATIO"             /** 1/EXTRACT_RATIO halite (rounded) is collected from a square per turn. */
 	MoveCostRatio            string = "MOVE_COST_RATIO"           /** 1/MOVE_COST_RATIO halite (rounded) is needed to move off a cell. */

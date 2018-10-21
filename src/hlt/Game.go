@@ -37,7 +37,7 @@ func NewGame() *Game {
 	var numPlayers, _ = input.GetInt()
 	var myID, _ = input.GetInt()
 	var players = make([]*Player, numPlayers)
-	for i := range players {
+	for i := 0; i < len(players); i++ {
 		players[i] = NewPlayer()
 	}
 	var gameMap = GenerateGameMap()
@@ -51,7 +51,7 @@ func (g *Game) UpdateFrame() {
 	var input = input.GetInstance()
 	g.TurnNumber, _ = input.GetInt()
 	logger.Printf("=============== TURN %d ================\n", g.TurnNumber)
-	for i := range g.players {
+	for i := 0; i < len(g.players); i++ {
 		// Player ID variable being read here. It isn't used, so we can't assign it in Go without error, but we still need to consume it from the input
 		input.GetInt()
 		var numShips, _ = input.GetInt()
@@ -60,13 +60,13 @@ func (g *Game) UpdateFrame() {
 		g.players[i].Update(numShips, numDropoffs, halite)
 	}
 	g.Map.Update()
-	for i := range g.players {
+	for i := 0; i < len(g.players); i++ {
 		var player = g.players[i]
-		for j := range player.Ships {
+		for j := 0; j < len(player.Ships); i++ {
 			var ship = player.Ships[j]
 			g.Map.AtEntity(ship.E).MarkUnsafe(ship)
 		}
-		for k := range player.Dropoffs {
+		for k := 0; k < len(player.Dropoffs); k++ {
 			var dropoff = player.Dropoffs[k]
 			g.Map.AtEntity(dropoff.E).structure = dropoff.E
 		}
@@ -75,7 +75,9 @@ func (g *Game) UpdateFrame() {
 
 // EndTurn -
 func (g *Game) EndTurn(commands []Command) {
-	for _, command := range commands {
+	var command Command
+	for i := 0; i < len(commands); i++ {
+		command = commands[i]
 		fmt.Print(command.CommandString())
 		fmt.Print(" ")
 	}
