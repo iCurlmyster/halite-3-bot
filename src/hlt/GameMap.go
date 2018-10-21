@@ -95,6 +95,7 @@ func (gm *GameMap) NaiveNavigate(ship *Ship, destination *Position) *Direction {
 	for i := 0; i < len(unsafeMoves); i++ {
 		direction = unsafeMoves[i]
 		var targetPos, _ = ship.E.Pos.DirectionalOffset(direction)
+		targetPos = gm.Normalize(targetPos)
 		if !gm.at(targetPos).IsOccupied() {
 			gm.at(targetPos).MarkUnsafe(ship)
 			return direction

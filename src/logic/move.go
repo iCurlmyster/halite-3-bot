@@ -32,16 +32,17 @@ func (move *MoveAI) Move(ship *hlt.Ship) hlt.Command {
 	case Return:
 		dir := move.Map.NaiveNavigate(ship, move.Me.Shipyard.E.Pos)
 		nextPos := helper.NormalizedDirectionalOffset(ship.E.Pos, move.Map, dir)
-		move.MarkFuturePos(nextPos)
-		return ship.Move(dir)
+		if !move.IsPosClaimed(nextPos) {
+			move.MarkFuturePos(nextPos)
+			return ship.Move(dir)
+		}
 	case Convert:
 		return ship.MakeDropoff()
 	case Stay:
-		fallthrough
-	default:
-		move.MarkFuturePos(ship.E.Pos)
-		return ship.StayStill()
+		break
 	}
+	move.MarkFuturePos(ship.E.Pos)
+	return ship.StayStill()
 }
 
 // MarkFuturePos - Mark future positions of ship movements

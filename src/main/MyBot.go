@@ -61,7 +61,7 @@ func main() {
 			commands = append(commands, moveAI.Move(ship))
 		}
 		var shipCost, _ = config.GetInt(gameconfig.ShipCost)
-		if game.TurnNumber <= 200 && me.Halite >= shipCost && !gameMap.AtEntity(me.Shipyard.E).IsOccupied() {
+		if len(ships) < 6 && me.Halite >= shipCost && !gameMap.AtEntity(me.Shipyard.E).IsOccupied() {
 			commands = append(commands, hlt.SpawnShip{})
 		}
 		game.EndTurn(commands)
