@@ -30,12 +30,7 @@ func (move *MoveAI) Move(ship *hlt.Ship) hlt.Command {
 	case Collect:
 		return move.randomAvailableDirection(ship)
 	case Return:
-		dir := move.Map.NaiveNavigate(ship, move.Me.Shipyard.E.Pos)
-		nextPos := helper.NormalizedDirectionalOffset(ship.E.Pos, move.Map, dir)
-		if !move.IsPosClaimed(nextPos) {
-			move.MarkFuturePos(nextPos)
-			return ship.Move(dir)
-		}
+		return move.navigateToDropOff(ship)
 	case Convert:
 		return ship.MakeDropoff()
 	case Stay:
@@ -62,6 +57,17 @@ func (move *MoveAI) randomAvailableDirection(ship *hlt.Ship) hlt.Command {
 	choice, nextPos := exhaustOptions(move, ship.E.Pos, dirs)
 	move.MarkFuturePos(nextPos)
 	return ship.Move(choice)
+}
+
+func (move *MoveAI) navigateToDropOff(ship *hlt.Ship) hlt.Command {
+	dir := move.Map.NaiveNavigate(ship, move.Me.Shipyard.E.Pos)
+	nextPos := helper.NormalizedDirectionalOffset(ship.E.Pos, move.Map, dir)
+	if !move.IsPosClaimed(nextPos) {
+		move.MarkFuturePos(nextPos)
+		return ship.Move(dir)
+	}
+	move.MarkFuturePos(ship.E.Pos)
+	return ship.StayStill()
 }
 
 func exhaustOptions(move *MoveAI, pos *hlt.Position, dirs []*hlt.Direction) (*hlt.Direction, *hlt.Position) {

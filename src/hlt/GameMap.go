@@ -91,9 +91,7 @@ func (gm *GameMap) at(position *Position) *MapCell {
 // NaiveNavigate -
 func (gm *GameMap) NaiveNavigate(ship *Ship, destination *Position) *Direction {
 	var unsafeMoves = gm.GetUnsafeMoves(ship.E.Pos, destination)
-	var direction *Direction
-	for i := 0; i < len(unsafeMoves); i++ {
-		direction = unsafeMoves[i]
+	for _, direction := range unsafeMoves {
 		var targetPos, _ = ship.E.Pos.DirectionalOffset(direction)
 		targetPos = gm.Normalize(targetPos)
 		if !gm.at(targetPos).IsOccupied() {

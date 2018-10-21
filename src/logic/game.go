@@ -68,8 +68,5 @@ func (gm *GameAI) hasShipReturned(currentCell *hlt.MapCell, ship *hlt.Ship) bool
 		gm.shipsMarkedForReturn[ship.E.ID()] = false
 		return true
 	}
-	if !currentCell.HasStructure() {
-		return false
-	}
 	return false
 }
