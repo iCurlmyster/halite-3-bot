@@ -48,7 +48,7 @@ func main() {
 	var logger = fileLogger.Logger
 	logger.Printf("Successfully created bot! My Player ID is %d. Bot rng seed is %d.", game.Me.ID, seed)
 	gracefulExit(fileLogger)
-	game.Ready("MyBot")
+	game.Ready("jm")
 	for {
 		game.UpdateFrame()
 		var me = game.Me

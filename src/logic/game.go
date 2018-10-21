@@ -3,6 +3,8 @@ package logic
 import (
 	"hlt"
 	"hlt/gameconfig"
+	"hlt/log"
+	"math"
 )
 
 // ShipDecision - Representation of what logic the ship should perform
@@ -39,7 +41,8 @@ func NewGameAI(g *hlt.Game, c *gameconfig.Constants) *GameAI {
 func (gm *GameAI) ShipLogic(ship *hlt.Ship) ShipDecision {
 	currentCell := gm.game.Map.AtEntity(ship.E)
 	maxHalite, _ := gm.config.GetInt(gameconfig.MaxHalite)
-	if ship.Halite == 0 {
+	moveCost, _ := gm.config.GetDouble(gameconfig.MoveCostRatio)
+	if math.Ceil(float64(currentCell.Halite)*(1.0/moveCost)) > float64(ship.Halite) && !ship.E.Pos.Equals(gm.game.Me.Shipyard.E.Pos) {
 		return Stay
 	}
 	if t, ok := gm.shipsMarkedForReturn[ship.E.ID()]; ok && t {
@@ -56,16 +59,17 @@ func (gm *GameAI) ShipLogic(ship *hlt.Ship) ShipDecision {
 	if currentCell.Halite < (maxHalite / 10) {
 		return Collect
 	}
-	return Collect
+	return Stay
 }
 
 func (gm *GameAI) hasShipReturned(currentCell *hlt.MapCell, ship *hlt.Ship) bool {
-	if !currentCell.HasStructure() {
-		return false
-	}
 	if currentCell.Pos.Equals(gm.game.Me.Shipyard.E.Pos) {
+		log.GetInstance().Printf("ship has returned")
 		gm.shipsMarkedForReturn[ship.E.ID()] = false
 		return true
+	}
+	if !currentCell.HasStructure() {
+		return false
 	}
 	return false
 }
