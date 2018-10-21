@@ -60,13 +60,13 @@ func (g *Game) UpdateFrame() {
 		g.players[i].Update(numShips, numDropoffs, halite)
 	}
 	g.Map.Update()
-	for i := 0; i < len(g.players); i++ {
+	for i := range g.players {
 		var player = g.players[i]
-		for j := 0; j < len(player.Ships); i++ {
+		for j := range player.Ships {
 			var ship = player.Ships[j]
 			g.Map.AtEntity(ship.E).MarkUnsafe(ship)
 		}
-		for k := 0; k < len(player.Dropoffs); k++ {
+		for k := range player.Dropoffs {
 			var dropoff = player.Dropoffs[k]
 			g.Map.AtEntity(dropoff.E).structure = dropoff.E
 		}

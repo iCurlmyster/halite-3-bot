@@ -36,6 +36,8 @@ func (move *MoveAI) Move(ship *hlt.Ship) hlt.Command {
 		return ship.Move(dir)
 	case Convert:
 		return ship.MakeDropoff()
+	case Stay:
+		fallthrough
 	default:
 		move.MarkFuturePos(ship.E.Pos)
 		return ship.StayStill()

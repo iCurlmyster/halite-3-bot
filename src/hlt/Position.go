@@ -28,3 +28,11 @@ func (p *Position) DirectionalOffset(d *Direction) (*Position, error) {
 	}
 	return nil, fmt.Errorf("Invalid direction %c", d.charValue)
 }
+
+// Equals - Compares the position against a given position
+func (p *Position) Equals(o *Position) bool {
+	if o == nil {
+		return false
+	}
+	return p.x == o.x && p.y == o.y
+}
