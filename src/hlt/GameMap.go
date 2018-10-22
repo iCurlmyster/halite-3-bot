@@ -19,7 +19,7 @@ func (gm *GameMap) String() string {
 // NewGameMap - Creates an empty map
 func NewGameMap(width int, height int) *GameMap {
 	cells := make([][]*MapCell, height)
-	for i := 0; i < len(cells); i++ {
+	for i := range cells {
 		cells[i] = make([]*MapCell, width)
 	}
 	return &GameMap{width, height, cells}

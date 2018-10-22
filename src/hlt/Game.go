@@ -37,7 +37,7 @@ func NewGame() *Game {
 	var numPlayers, _ = input.GetInt()
 	var myID, _ = input.GetInt()
 	var players = make([]*Player, numPlayers)
-	for i := 0; i < len(players); i++ {
+	for i := range players {
 		players[i] = NewPlayer()
 	}
 	var gameMap = GenerateGameMap()
@@ -51,7 +51,7 @@ func (g *Game) UpdateFrame() {
 	var input = input.GetInstance()
 	g.TurnNumber, _ = input.GetInt()
 	logger.Printf("=============== TURN %d ================\n", g.TurnNumber)
-	for i := 0; i < len(g.players); i++ {
+	for i := range g.players {
 		// Player ID variable being read here. It isn't used, so we can't assign it in Go without error, but we still need to consume it from the input
 		input.GetInt()
 		var numShips, _ = input.GetInt()
@@ -75,9 +75,7 @@ func (g *Game) UpdateFrame() {
 
 // EndTurn -
 func (g *Game) EndTurn(commands []Command) {
-	var command Command
-	for i := 0; i < len(commands); i++ {
-		command = commands[i]
+	for _, command := range commands {
 		fmt.Print(command.CommandString())
 		fmt.Print(" ")
 	}
