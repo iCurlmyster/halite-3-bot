@@ -3,7 +3,6 @@ package logic
 import (
 	"hlt"
 	"hlt/gameconfig"
-	"hlt/log"
 	"math"
 )
 
@@ -64,7 +63,6 @@ func (gm *GameAI) ShipLogic(ship *hlt.Ship) ShipDecision {
 
 func (gm *GameAI) hasShipReturned(currentCell *hlt.MapCell, ship *hlt.Ship) bool {
 	if currentCell.Pos.Equals(gm.game.Me.Shipyard.E.Pos) {
-		log.GetInstance().Printf("ship has returned")
 		gm.shipsMarkedForReturn[ship.E.ID()] = false
 		return true
 	}

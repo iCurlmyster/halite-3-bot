@@ -40,6 +40,10 @@ func main() {
 	// At this point "game" variable is populated with initial map data.
 	// This is a good place to do computationally expensive start-up pre-processing.
 	// As soon as you call "ready" function below, the 2 second per turn timer will start.
+
+	// TODO scan board with a window to build a hueristic of most desirable locations on map. Set in GameAI
+	// determine window by taking  width/8  to yield window size. example 32x32 map -> 32/8 yields window of size 4
+
 	var config = gameconfig.GetInstance()
 	// Setup GameAI to persist data between frames
 	gameAI := logic.NewGameAI(game, config)
