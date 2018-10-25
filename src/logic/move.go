@@ -59,8 +59,8 @@ func (move *MoveAI) IsFutureClaimed(pos *hlt.Position) bool {
 }
 
 func (move *MoveAI) determinePath(ship *hlt.Ship) hlt.Command {
-	if c, found := move.findHaliteInWindow(ship.E.Pos, 4); found {
-		return c
+	if d, found := move.findHaliteInWindow(ship.E.Pos, 4); found {
+		return ship.Move(d)
 	}
 	return move.randomAvailableDirection(ship)
 }
@@ -88,8 +88,52 @@ func (move *MoveAI) navigateToDropOff(ship *hlt.Ship) hlt.Command {
 	return ship.StayStill()
 }
 
-func (move *MoveAI) findHaliteInWindow(pos *hlt.Position, n int) (hlt.Command, bool) {
+func (move *MoveAI) findHaliteInWindow(pos *hlt.Position, n int) (*hlt.Direction, bool) {
 	// TODO look for the best immediate path to head towards.
+	for i := 0; i < n; i++ {
+		panels := helper.NormalizedGridOutlineOffset(pos, move.Map, i+1)
+		var answer *hlt.MapCell
+		for j := 0; j < len(panels); j++ {
+			cell := move.Map.AtPosition(panels[j])
+			if cell.Halite > 100 {
+				if answer == nil {
+					answer = cell
+				} else if cell.Halite > answer.Halite {
+					answer = cell
+				} else if cell.Halite == answer.Halite {
+					cp := move.Map.CalculateDistance(pos, cell.Pos)
+					ap := move.Map.CalculateDistance(pos, answer.Pos)
+					if cp < ap {
+						answer = cell
+					}
+				}
+			}
+		}
+		if answer != nil {
+			dirs := move.Map.GetUnsafeMoves(pos, answer.Pos)
+			var finalDir *hlt.Direction
+			dir1 := helper.NormalizedDirectionalOffset(pos, move.Map, dirs[0])
+			dir2 := helper.NormalizedDirectionalOffset(pos, move.Map, dirs[1])
+			dir1Dis := move.Map.CalculateDistance(pos, dir1)
+			dir2Dis := move.Map.CalculateDistance(pos, dir2)
+			if dir1Dis == 0 {
+				finalDir = dirs[1]
+			} else if dir2Dis == 0 {
+				finalDir = dirs[0]
+			} else if dir1Dis < dir2Dis {
+				finalDir = dirs[0]
+			} else {
+				finalDir = dirs[1]
+			}
+			if finalDir != nil {
+				nextPos := helper.NormalizedDirectionalOffset(pos, move.Map, finalDir)
+				if !move.IsPosClaimed(nextPos) {
+					move.MarkFuturePos(nextPos)
+					return finalDir, true
+				}
+			}
+		}
+	}
 	return nil, false
 }
 
