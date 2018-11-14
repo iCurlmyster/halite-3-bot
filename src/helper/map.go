@@ -22,10 +22,10 @@ func NormalizedDirectionalOffset(pos *hlt.Position, gMap *hlt.GameMap, d *hlt.Di
 func NormalizedGridOutlineOffset(pos *hlt.Position, gMap *hlt.GameMap, depth int) []*hlt.Position {
 	start := pos
 	for i := 0; i < depth; i++ {
-		start, _ = pos.DirectionalOffset(hlt.North())
+		start, _ = start.DirectionalOffset(hlt.North())
 	}
 	for i := 0; i < depth; i++ {
-		start, _ = pos.DirectionalOffset(hlt.West())
+		start, _ = start.DirectionalOffset(hlt.West())
 	}
 	grid := make([]*hlt.Position, 0)
 	row := (2 * depth)

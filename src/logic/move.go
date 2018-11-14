@@ -3,6 +3,8 @@ package logic
 import (
 	"helper"
 	"hlt"
+	"hlt/gameconfig"
+	"math"
 	"math/rand"
 )
 
@@ -32,6 +34,7 @@ func (move *MoveAI) Move(ship *hlt.Ship) hlt.Command {
 	case Return:
 		return move.navigateToDropOff(ship)
 	case Convert:
+		move.gameAI.dropOffs = append(move.gameAI.dropOffs, ship.E.Pos)
 		return ship.MakeDropoff()
 	case Stay:
 		break
@@ -59,7 +62,7 @@ func (move *MoveAI) IsFutureClaimed(pos *hlt.Position) bool {
 }
 
 func (move *MoveAI) determinePath(ship *hlt.Ship) hlt.Command {
-	if d, found := move.findHaliteInWindow(ship.E.Pos, 4); found {
+	if d, found := move.findHaliteInWindow(ship.E.Pos, 4+int(math.Floor(float64(move.gameAI.game.TurnNumber)/100.0))); found {
 		return ship.Move(d)
 	}
 	return move.randomAvailableDirection(ship)
@@ -78,7 +81,28 @@ func (move *MoveAI) randomAvailableDirection(ship *hlt.Ship) hlt.Command {
 }
 
 func (move *MoveAI) navigateToDropOff(ship *hlt.Ship) hlt.Command {
-	dir := move.Map.NaiveNavigate(ship, move.Me.Shipyard.E.Pos)
+	maxTurns, _ := move.gameAI.config.GetInt(gameconfig.MaxTurns)
+	var dropoff *hlt.Position
+	dDis := 0
+	for _, d := range move.gameAI.dropOffs {
+		curDis := move.Map.CalculateDistance(ship.E.Pos, d)
+		if dropoff == nil {
+			dropoff = d
+			dDis = curDis
+		} else if curDis < dDis {
+			dropoff = d
+			dDis = curDis
+		}
+	}
+	if (maxTurns - move.gameAI.game.TurnNumber) <= len(move.Me.Ships) {
+		dirs := move.Map.GetUnsafeMoves(ship.E.Pos, dropoff)
+		fDir := move.determineBestDirectionOutOfTwo(dirs, dropoff)
+		if fDir != nil {
+			return ship.Move(fDir)
+		}
+		return ship.StayStill()
+	}
+	dir := move.Map.NaiveNavigate(ship, dropoff)
 	nextPos := helper.NormalizedDirectionalOffset(ship.E.Pos, move.Map, dir)
 	if !move.IsFutureClaimed(nextPos) {
 		move.MarkFuturePos(nextPos)
@@ -90,12 +114,12 @@ func (move *MoveAI) navigateToDropOff(ship *hlt.Ship) hlt.Command {
 
 func (move *MoveAI) findHaliteInWindow(pos *hlt.Position, n int) (*hlt.Direction, bool) {
 	// TODO look for the best immediate path to head towards.
+	var answer *hlt.MapCell
 	for i := 0; i < n; i++ {
 		panels := helper.NormalizedGridOutlineOffset(pos, move.Map, i+1)
-		var answer *hlt.MapCell
 		for j := 0; j < len(panels); j++ {
 			cell := move.Map.AtPosition(panels[j])
-			if cell.Halite > 100 {
+			if cell.Halite > 10 {
 				if answer == nil {
 					answer = cell
 				} else if cell.Halite > answer.Halite {
@@ -109,28 +133,15 @@ func (move *MoveAI) findHaliteInWindow(pos *hlt.Position, n int) (*hlt.Direction
 				}
 			}
 		}
-		if answer != nil {
-			dirs := move.Map.GetUnsafeMoves(pos, answer.Pos)
-			var finalDir *hlt.Direction
-			dir1 := helper.NormalizedDirectionalOffset(pos, move.Map, dirs[0])
-			dir2 := helper.NormalizedDirectionalOffset(pos, move.Map, dirs[1])
-			dir1Dis := move.Map.CalculateDistance(pos, dir1)
-			dir2Dis := move.Map.CalculateDistance(pos, dir2)
-			if dir1Dis == 0 {
-				finalDir = dirs[1]
-			} else if dir2Dis == 0 {
-				finalDir = dirs[0]
-			} else if dir1Dis < dir2Dis {
-				finalDir = dirs[0]
-			} else {
-				finalDir = dirs[1]
-			}
-			if finalDir != nil {
-				nextPos := helper.NormalizedDirectionalOffset(pos, move.Map, finalDir)
-				if !move.IsPosClaimed(nextPos) {
-					move.MarkFuturePos(nextPos)
-					return finalDir, true
-				}
+	}
+	if answer != nil {
+		dirs := move.Map.GetUnsafeMoves(pos, answer.Pos)
+		finalDir := move.determineBestDirectionOutOfTwo(dirs, pos)
+		if finalDir != nil {
+			nextPos := helper.NormalizedDirectionalOffset(pos, move.Map, finalDir)
+			if !move.IsPosClaimed(nextPos) {
+				move.MarkFuturePos(nextPos)
+				return finalDir, true
 			}
 		}
 	}
@@ -158,4 +169,22 @@ func (move *MoveAI) AvailableDirectionsForEntity(e *hlt.Entity) []*hlt.Direction
 		dirs = append(dirs, hlt.East())
 	}
 	return dirs
+}
+
+func (move *MoveAI) determineBestDirectionOutOfTwo(dirs []*hlt.Direction, pos *hlt.Position) *hlt.Direction {
+	var finalDir *hlt.Direction
+	dir1 := helper.NormalizedDirectionalOffset(pos, move.Map, dirs[0])
+	dir2 := helper.NormalizedDirectionalOffset(pos, move.Map, dirs[1])
+	dir1Dis := move.Map.CalculateDistance(pos, dir1)
+	dir2Dis := move.Map.CalculateDistance(pos, dir2)
+	if dir1Dis == 0 {
+		finalDir = dirs[1]
+	} else if dir2Dis == 0 {
+		finalDir = dirs[0]
+	} else if dir1Dis < dir2Dis {
+		finalDir = dirs[0]
+	} else {
+		finalDir = dirs[1]
+	}
+	return finalDir
 }

@@ -6,6 +6,7 @@ import (
 	"hlt/gameconfig"
 	"hlt/log"
 	"logic"
+	"math"
 	"math/rand"
 	"os"
 	"os/signal"
@@ -47,6 +48,7 @@ func main() {
 	var config = gameconfig.GetInstance()
 	// Setup GameAI to persist data between frames
 	gameAI := logic.NewGameAI(game, config)
+	maxShipCount := 8
 
 	fileLogger := log.NewFileLogger(game.Me.ID)
 	var logger = fileLogger.Logger
@@ -60,13 +62,26 @@ func main() {
 		var ships = me.Ships
 		var commands = []hlt.Command{}
 		var moveAI = logic.NewMoveAI(gameAI, gameMap, me)
+		var convertAI = logic.NewConvertAI(gameAI)
+		if com := convertAI.DeterminePossibleDropOff(ships); com != nil {
+			commands = append(commands, com)
+		}
 		for i := range ships {
 			var ship = ships[i]
+			if convertAI.IsCurrentDropoff(ship) {
+				continue
+			}
 			commands = append(commands, moveAI.Move(ship))
 		}
 		var shipCost, _ = config.GetInt(gameconfig.ShipCost)
-		if len(ships) < 6 && me.Halite >= shipCost && !gameMap.AtEntity(me.Shipyard.E).IsOccupied() {
+		if len(ships) < maxShipCount && me.Halite >= (3*shipCost) && !gameMap.AtEntity(me.Shipyard.E).IsOccupied() {
 			commands = append(commands, hlt.SpawnShip{})
+			if (len(ships)+1) >= maxShipCount && maxShipCount > 6 {
+				maxShipCount--
+			}
+		}
+		if math.Mod(float64(game.TurnNumber), 100.0) == 0 {
+			maxShipCount--
 		}
 		game.EndTurn(commands)
 	}
