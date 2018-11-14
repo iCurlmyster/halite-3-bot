@@ -55,6 +55,7 @@ func main() {
 	logger.Printf("Successfully created bot! My Player ID is %d. Bot rng seed is %d.", game.Me.ID, seed)
 	gracefulExit(fileLogger)
 	game.Ready("jm")
+	maxTurn, _ := config.GetInt(gameconfig.MaxTurns)
 	for {
 		game.UpdateFrame()
 		var me = game.Me
@@ -74,7 +75,7 @@ func main() {
 			commands = append(commands, moveAI.Move(ship))
 		}
 		var shipCost, _ = config.GetInt(gameconfig.ShipCost)
-		if len(ships) < maxShipCount && me.Halite >= (3*shipCost) && !gameMap.AtEntity(me.Shipyard.E).IsOccupied() {
+		if len(ships) < maxShipCount && me.Halite >= (3*shipCost) && !gameMap.AtEntity(me.Shipyard.E).IsOccupied() && (maxTurn-game.TurnNumber) <= 100 {
 			commands = append(commands, hlt.SpawnShip{})
 			if (len(ships)+1) >= maxShipCount && maxShipCount > 6 {
 				maxShipCount--
