@@ -48,7 +48,7 @@ func main() {
 	var config = gameconfig.GetInstance()
 	// Setup GameAI to persist data between frames
 	gameAI := logic.NewGameAI(game, config)
-	maxShipCount := 8
+	maxShipCount := 12
 
 	fileLogger := log.NewFileLogger(game.Me.ID)
 	var logger = fileLogger.Logger
@@ -75,7 +75,7 @@ func main() {
 			commands = append(commands, moveAI.Move(ship))
 		}
 		var shipCost, _ = config.GetInt(gameconfig.ShipCost)
-		if len(ships) < maxShipCount && me.Halite >= (3*shipCost) && !gameMap.AtEntity(me.Shipyard.E).IsOccupied() && (maxTurn-game.TurnNumber) <= 100 {
+		if len(ships) < maxShipCount && me.Halite >= (shipCost) && !gameMap.AtEntity(me.Shipyard.E).IsOccupied() && (maxTurn-game.TurnNumber) >= 100 {
 			commands = append(commands, hlt.SpawnShip{})
 			if (len(ships)+1) >= maxShipCount && maxShipCount > 6 {
 				maxShipCount--

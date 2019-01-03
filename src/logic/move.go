@@ -1,6 +1,7 @@
 package logic
 
 import (
+	"fmt"
 	"helper"
 	"hlt"
 	"hlt/gameconfig"
@@ -62,10 +63,13 @@ func (move *MoveAI) IsFutureClaimed(pos *hlt.Position) bool {
 }
 
 func (move *MoveAI) determinePath(ship *hlt.Ship) hlt.Command {
-	if d, found := move.findHaliteInWindow(ship.E.Pos, 4+int(math.Floor(float64(move.gameAI.game.TurnNumber)/100.0))); found {
-		return ship.Move(d)
-	}
-	return move.randomAvailableDirection(ship)
+	cell := move.findMostHaliteInWindow(ship.E.Pos, 4+int(math.Floor(float64(move.gameAI.game.TurnNumber)/100.0)))
+
+	return ship.Move(move.lazyGreedySearch(cell.Pos, ship.E.Pos, 4))
+	// if d, found := move.findDirectionToCell(cell, ship.E.Pos); found {
+	// 	return ship.Move(d)
+	// }
+	// return move.randomAvailableDirection(ship)
 }
 
 func (move *MoveAI) randomAvailableDirection(ship *hlt.Ship) hlt.Command {
@@ -102,18 +106,18 @@ func (move *MoveAI) navigateToDropOff(ship *hlt.Ship) hlt.Command {
 		}
 		return ship.StayStill()
 	}
-	dir := move.Map.NaiveNavigate(ship, dropoff)
-	nextPos := helper.NormalizedDirectionalOffset(ship.E.Pos, move.Map, dir)
-	if !move.IsFutureClaimed(nextPos) {
-		move.MarkFuturePos(nextPos)
-		return ship.Move(dir)
-	}
-	move.MarkFuturePos(ship.E.Pos)
-	return ship.StayStill()
+	return ship.Move(move.lazyGreedySearch(dropoff, ship.E.Pos, 4))
+	// dir := move.Map.NaiveNavigate(ship, dropoff)
+	// nextPos := helper.NormalizedDirectionalOffset(ship.E.Pos, move.Map, dir)
+	// if !move.IsFutureClaimed(nextPos) {
+	// 	move.MarkFuturePos(nextPos)
+	// 	return ship.Move(dir)
+	// }
+	// move.MarkFuturePos(ship.E.Pos)
+	// return ship.StayStill()
 }
 
-func (move *MoveAI) findHaliteInWindow(pos *hlt.Position, n int) (*hlt.Direction, bool) {
-	// TODO look for the best immediate path to head towards.
+func (move *MoveAI) findMostHaliteInWindow(pos *hlt.Position, n int) *hlt.MapCell {
 	var answer *hlt.MapCell
 	for i := 0; i < n; i++ {
 		panels := helper.NormalizedGridOutlineOffset(pos, move.Map, i+1)
@@ -134,6 +138,10 @@ func (move *MoveAI) findHaliteInWindow(pos *hlt.Position, n int) (*hlt.Direction
 			}
 		}
 	}
+	return answer
+}
+
+func (move *MoveAI) findDirectionToCell(answer *hlt.MapCell, pos *hlt.Position) (*hlt.Direction, bool) {
 	if answer != nil {
 		dirs := move.Map.GetUnsafeMoves(pos, answer.Pos)
 		finalDir := move.determineBestDirectionOutOfTwo(dirs, pos)
@@ -151,10 +159,15 @@ func (move *MoveAI) findHaliteInWindow(pos *hlt.Position, n int) (*hlt.Direction
 // AvailableDirectionsForEntity - Returns array of immediately available neighboring positions
 func (move *MoveAI) AvailableDirectionsForEntity(e *hlt.Entity) []*hlt.Direction {
 	cell := move.Map.AtEntity(e)
-	up := helper.NormalizedDirectionalOffset(cell.Pos, move.Map, hlt.North())
-	down := helper.NormalizedDirectionalOffset(cell.Pos, move.Map, hlt.South())
-	left := helper.NormalizedDirectionalOffset(cell.Pos, move.Map, hlt.West())
-	right := helper.NormalizedDirectionalOffset(cell.Pos, move.Map, hlt.East())
+	return move.AvailableDirectionsForPos(cell.Pos)
+}
+
+// AvailableDirectionsForPos - Returns array of immediately available neighboring positions
+func (move *MoveAI) AvailableDirectionsForPos(pos *hlt.Position) []*hlt.Direction {
+	up := helper.NormalizedDirectionalOffset(pos, move.Map, hlt.North())
+	down := helper.NormalizedDirectionalOffset(pos, move.Map, hlt.South())
+	left := helper.NormalizedDirectionalOffset(pos, move.Map, hlt.West())
+	right := helper.NormalizedDirectionalOffset(pos, move.Map, hlt.East())
 	dirs := make([]*hlt.Direction, 0)
 	if !move.IsPosClaimed(up) {
 		dirs = append(dirs, hlt.North())
@@ -167,6 +180,28 @@ func (move *MoveAI) AvailableDirectionsForEntity(e *hlt.Entity) []*hlt.Direction
 	}
 	if !move.IsPosClaimed(right) {
 		dirs = append(dirs, hlt.East())
+	}
+	return dirs
+}
+
+// AvailablePositionsForPos -
+func (move *MoveAI) AvailablePositionsForPos(pos *hlt.Position) []*hlt.Position {
+	up := helper.NormalizedDirectionalOffset(pos, move.Map, hlt.North())
+	down := helper.NormalizedDirectionalOffset(pos, move.Map, hlt.South())
+	left := helper.NormalizedDirectionalOffset(pos, move.Map, hlt.West())
+	right := helper.NormalizedDirectionalOffset(pos, move.Map, hlt.East())
+	dirs := make([]*hlt.Position, 0)
+	if !move.IsPosClaimed(up) {
+		dirs = append(dirs, up)
+	}
+	if !move.IsPosClaimed(down) {
+		dirs = append(dirs, down)
+	}
+	if !move.IsPosClaimed(left) {
+		dirs = append(dirs, left)
+	}
+	if !move.IsPosClaimed(right) {
+		dirs = append(dirs, right)
 	}
 	return dirs
 }
@@ -187,4 +222,65 @@ func (move *MoveAI) determineBestDirectionOutOfTwo(dirs []*hlt.Direction, pos *h
 		finalDir = dirs[1]
 	}
 	return finalDir
+}
+
+func (move *MoveAI) lazyGreedySearch(target, src *hlt.Position, depth int) *hlt.Direction {
+	history := make(map[*hlt.Direction][]*hlt.Position)
+	claimed := make(map[string]bool)
+	parents := move.AvailableDirectionsForPos(src)
+	for _, d := range parents {
+		posDir := helper.NormalizedDirectionalOffset(src, move.Map, d)
+		if posDir.Equals(target) {
+			move.MarkFuturePos(posDir)
+			return d
+		}
+		history[d] = []*hlt.Position{posDir}
+	}
+	for i := 0; i < depth; i++ {
+		for _, d := range parents {
+			his := history[d]
+			curSrc := his[len(his)-1]
+			avDirs := move.AvailablePositionsForPos(curSrc)
+			bestDis := 10000000
+			var bestPos *hlt.Position
+			for _, ad := range avDirs {
+				if _, ok := claimed[fmt.Sprintf("%s%s", d.String(), ad.String())]; !ok {
+					if ad.Equals(target) {
+						move.MarkFuturePos(his[0])
+						return d
+					}
+					tmpDis := move.Map.CalculateDistance(ad, target)
+					if tmpDis < bestDis {
+						bestPos = ad
+						bestDis = tmpDis
+					}
+				}
+			}
+			if bestPos != nil {
+				history[d] = append(his, bestPos)
+				claimed[fmt.Sprintf("%s%s", d.String(), bestPos.String())] = true
+			}
+		}
+	}
+
+	var bestDir *hlt.Direction
+	bestDis := 100000000
+	var bestPos *hlt.Position
+	for k, v := range history {
+		if len(v) == 0 {
+			continue
+		}
+		last := v[len(v)-1]
+		tmpDis := move.Map.CalculateDistance(last, target)
+		if tmpDis < bestDis {
+			bestDis = tmpDis
+			bestDir = k
+			bestPos = v[0]
+		}
+	}
+	if bestDir != nil {
+		move.MarkFuturePos(bestPos)
+		return bestDir
+	}
+	return hlt.Still()
 }

@@ -38,14 +38,6 @@ func (ca *ConvertAI) DeterminePossibleDropOff(ships map[int]*hlt.Ship) hlt.Comma
 	optDis := 0
 	for i := range ships {
 		var s = ships[i]
-		// curDis := ca.game.game.Map.CalculateDistance(s.E.Pos, ca.game.game.Me.Shipyard.E.Pos)
-		// if optShip == nil && (10-curDis) <= 2 {
-		// 	optShip = s
-		// 	optDis = curDis
-		// } else if (10-curDis) <= 2 && curDis < optDis {
-		// 	optShip = s
-		// 	optDis = curDis
-		// }
 		if d, ok := ca.correctDistance(optDis, s.E.Pos, ca.game.dropOffs); ok {
 			optShip = s
 			optDis = d

@@ -9,6 +9,10 @@ type Direction struct {
 	charValue byte
 }
 
+func (d *Direction) String() string {
+	return string(d.charValue)
+}
+
 // Single character abbreviations for directions
 const (
 	NORTH byte = 'n'
