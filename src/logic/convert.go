@@ -31,7 +31,7 @@ func NewConvertAI(g *GameAI) *ConvertAI {
 func (ca *ConvertAI) DeterminePossibleDropOff(ships map[int]*hlt.Ship) hlt.Command {
 	dropCost, _ := ca.game.config.GetInt(gameconfig.DropoffCost)
 	maxTurn, _ := ca.game.config.GetInt(gameconfig.MaxTurns)
-	if ca.game.game.Me.Halite < (dropCost*(2*len(ca.game.dropOffs))) || (maxTurn-ca.game.game.TurnNumber) < 100 {
+	if ca.game.game.Me.Halite < (dropCost*(2*len(ca.game.dropOffs))) || (maxTurn-ca.game.game.TurnNumber) <= 230 {
 		return nil
 	}
 	var optShip *hlt.Ship
