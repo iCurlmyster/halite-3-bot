@@ -1,9 +1,9 @@
 # Halite 3 competition in Golang
 
 ### Highlights
-My Rank 1008 out of 4014 players
-Bot Rating 29.32
-Made silver tier
+- My Rank 1008 out of 4014 players
+- Bot Rating 29.32
+- Made silver tier
 
 ### Summary 
 
