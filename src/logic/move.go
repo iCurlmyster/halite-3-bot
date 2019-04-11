@@ -72,6 +72,7 @@ func (move *MoveAI) determinePath(ship *hlt.Ship) hlt.Command {
 	// return move.randomAvailableDirection(ship)
 }
 
+// function not used anymore because we switched to lazyGreedySearch
 func (move *MoveAI) randomAvailableDirection(ship *hlt.Ship) hlt.Command {
 	dirs := move.AvailableDirectionsForEntity(ship.E)
 	nextPos := ship.E.Pos
@@ -98,6 +99,9 @@ func (move *MoveAI) navigateToDropOff(ship *hlt.Ship) hlt.Command {
 			dDis = curDis
 		}
 	}
+	// if the number of turns is less than the amount of ships
+	// disregard saftey checks in lazyGreedySearch and just navigate to destination (should be dock)
+	// even if they need to crash into other ships
 	if (maxTurns - move.gameAI.game.TurnNumber) <= len(move.Me.Ships) {
 		dirs := move.Map.GetUnsafeMoves(ship.E.Pos, dropoff)
 		fDir := move.determineBestDirectionOutOfTwo(dirs, dropoff)
@@ -117,6 +121,7 @@ func (move *MoveAI) navigateToDropOff(ship *hlt.Ship) hlt.Command {
 	// return ship.StayStill()
 }
 
+// create grid and keep searching out to a certain depth for the cell with the most halite and that is close
 func (move *MoveAI) findMostHaliteInWindow(pos *hlt.Position, n int) *hlt.MapCell {
 	var answer *hlt.MapCell
 	for i := 0; i < n; i++ {
@@ -141,6 +146,7 @@ func (move *MoveAI) findMostHaliteInWindow(pos *hlt.Position, n int) *hlt.MapCel
 	return answer
 }
 
+// This method was replaced with the lazyGreedySearch
 func (move *MoveAI) findDirectionToCell(answer *hlt.MapCell, pos *hlt.Position) (*hlt.Direction, bool) {
 	if answer != nil {
 		dirs := move.Map.GetUnsafeMoves(pos, answer.Pos)
@@ -224,6 +230,7 @@ func (move *MoveAI) determineBestDirectionOutOfTwo(dirs []*hlt.Direction, pos *h
 	return finalDir
 }
 
+// perform a breadth for search up to a certain depth or if we find the destination
 func (move *MoveAI) lazyGreedySearch(target, src *hlt.Position, depth int) *hlt.Direction {
 	history := make(map[*hlt.Direction][]*hlt.Position)
 	claimed := make(map[string]bool)

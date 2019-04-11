@@ -31,6 +31,7 @@ func NewConvertAI(g *GameAI) *ConvertAI {
 func (ca *ConvertAI) DeterminePossibleDropOff(ships map[int]*hlt.Ship) hlt.Command {
 	dropCost, _ := ca.game.config.GetInt(gameconfig.DropoffCost)
 	maxTurn, _ := ca.game.config.GetInt(gameconfig.MaxTurns)
+	// if we do not have enough halite or we are getting too close to the end of the match, don't convert
 	if ca.game.game.Me.Halite < (dropCost*(2*len(ca.game.dropOffs))) || (maxTurn-ca.game.game.TurnNumber) <= 230 {
 		return nil
 	}
@@ -67,6 +68,8 @@ func (ca *ConvertAI) correctDistance(optDis int, shipPos *hlt.Position, dos []*h
 	curDis := optDis
 	for _, d := range dos {
 		tmpDis := ca.game.game.Map.CalculateDistance(shipPos, d)
+		// can be any distance greater than threshold. But cannot be too near any other docking station
+		// had ideas to maybe have some of these values fluctuate but never got around to playing with that
 		if (dropoffDistancePoint - tmpDis) > dropoffDistanceThreshold {
 			return 0, false
 		} else if curDis == 0 || tmpDis < curDis {
