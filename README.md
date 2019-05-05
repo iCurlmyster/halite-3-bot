@@ -7,16 +7,16 @@
 
 ### Summary 
 
-This competition required you to program logic for a Bot to collect Halite and store the halite in your docks.
+This competition required you to program logic for a Bot(ship) to collect a resource called "Halite" and store the halite in a storage location(dock).
 We were given boiler plate code for a simple bot that had very basic random logic and we were to edit the code with our own logic to make something better and submit our bot to the Halite website to challenge against others.
 
-All Halite related files for the bot are in `src/hlt`. Extra helper and logic functionality that I added can be found in `src/helper` and `src/logic`. I did edit a couple of things in the `hlt` package to either expose a private field or add needed functionality.
+All Halite(the game) related files for the bot are in `src/hlt`. Extra helper and logic functionality files that I added can be found in `src/helper` and `src/logic`. I did edit a couple of things in the `hlt` package to either expose a private field or add needed functionality.
 
 In `src/main/MyBot.go` is where everything is initialized and the game loop is set up.
 
-The `run_game` files are how to run the game. These files expect two bots to exist beforehand named `bot` and `bot2`.
+The `run_game` files are how to run the game. These files expect two bots to exist beforehand, named `bot` and `bot2`.
 
-`zipproj.sh` and `clean.sh` were helper files that I created to working with testing out my bots and packaging up the code for submissions.
+`zipproj.sh` and `clean.sh` were helper files that I created for working with testing out my bots and packaging up the code for submissions.
 
 ### Reflections
 
