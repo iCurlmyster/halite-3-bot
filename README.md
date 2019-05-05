@@ -7,7 +7,7 @@
 
 ### Summary 
 
-This competition required you to program logic for a Bot(ship) to collect a resource called "Halite" and store the halite in a storage location(dock).
+This competition required you to program logic for a Bot(ship) to collect a resource called "Halite" and store the it in a storage location(dock).
 We were given boiler plate code for a simple bot that had very basic random logic and we were to edit the code with our own logic to make something better and submit our bot to the Halite website to challenge against others.
 
 All Halite(the game) related files for the bot are in `src/hlt`. Extra helper and logic functionality files that I added can be found in `src/helper` and `src/logic`. I did edit a couple of things in the `hlt` package to either expose a private field or add needed functionality.
